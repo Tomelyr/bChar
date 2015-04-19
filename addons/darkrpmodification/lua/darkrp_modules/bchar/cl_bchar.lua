@@ -66,6 +66,13 @@ function bChar.buildBox()
 	end
 	bChar.welcomeText:SetVerticalScrollbarEnabled(false)
 	
+	local icon = vgui.Create("DModelPanel", bChar.frame) --need to store it later in bChar for mod reason.
+	icon:SetSize( 200, 200 )
+	icon:SetModel( bChar.plyModelList[1].model ) -- you can only change colors on playermodels
+	function icon:LayoutEntity( Entity ) return end -- disables default rotation
+	icon.Entity:SetSubMaterial(bChar.plyModelList[1].skinid, "sheets_female/scrubs1.vmt")
+
+	
 	bChar.frame:MakePopup()
 end
 
