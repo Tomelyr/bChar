@@ -1,5 +1,7 @@
 Todo:
 Can i use the MySQL Lib from DarkRP inside a module?
 can i use SetSubMaterial on a DModelPanel? -- yes.
+Enchanced Citizens
+Bodygroups
 
 writing the damn addon.
