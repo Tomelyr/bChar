@@ -1,0 +1,5 @@
+Todo:
+Can i use the MySQL Lib from DarkRP inside a module?
+can i use SetSubMaterial on a DModelPanel?
+
+writing the damn addon.
