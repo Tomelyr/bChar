@@ -2,6 +2,7 @@
 local bChar = {}
 
 -- Normal Citizen Models with Path, Index for SubMaterial of the Body and Gender. Gonna modify the tbl later on for facemap support.
+/*
 bChar.plyModelList = {
 {model = "models/player/Group01/female_01.mdl", skinid = 2, gender = "female"},
 {model = "models/player/Group01/female_02.mdl", skinid = 3, gender = "female"},
@@ -19,6 +20,15 @@ bChar.plyModelList = {
 {model = "models/player/Group01/male_08.mdl", skinid = 0, gender = "male"},
 {model = "models/player/Group01/male_09.mdl", skinid = 2, gender = "male"},
 }
+*/
+bChar.plyModelList = {
+{model = "models/player/zelpa/female_01.mdl", gender = "female", torso_bgid = 1, torso_bgsid = 2, torso_skinid = 5, legs_bgid = 2, legs_bgsid = 7, legs_skinid = 9},
+{model = "models/player/zelpa/female_02.mdl", gender = "female", torso_bgid = 1, torso_bgsid = 2, torso_skinid = 6, legs_bgid = 2, legs_bgsid = 7, legs_skinid = 10},
+{model = "models/player/zelpa/female_03.mdl", gender = "female", torso_bgid = 1, torso_bgsid = 2, torso_skinid = 5, legs_bgid = 2, legs_bgsid = 7, legs_skinid = 9},
+{model = "models/player/zelpa/female_04.mdl", gender = "female", torso_bgid = 1, torso_bgsid = 2, torso_skinid = 5, legs_bgid = 2, legs_bgsid = 7, legs_skinid = 9},
+{model = "models/player/zelpa/female_06.mdl", gender = "female", torso_bgid = 1, torso_bgsid = 2, torso_skinid = 5, legs_bgid = 2, legs_bgsid = 7, legs_skinid = 9},
+{model = "models/player/zelpa/female_07.mdl", gender = "female", torso_bgid = 1, torso_bgsid = 2, torso_skinid = 5, legs_bgid = 2, legs_bgsid = 7, legs_skinid = 9},
+}
 
 -- Ripped eChat Fonts
 surface.CreateFont( "bChar_18", {
@@ -35,45 +45,134 @@ antialias = true,
 } )
 
 function bChar.buildBox()
-	bChar.frame = vgui.Create("DFrame")
-	bChar.frame:SetSize( 650, 350 )
-	bChar.frame:SetTitle("")
-	bChar.frame:ShowCloseButton( true )
-	bChar.frame:SetDraggable( false )
-	bChar.frame:SetPos( ScrW()/2 - (bChar.frame:GetWide()/2), ScrH()/2 - (bChar.frame:GetTall()/2))
-	bChar.frame.Paint = function( self, w, h )
-		bChar.blur( self, 10, 20, 255 )
-		draw.RoundedBox( 0, 0, 0, w, h, Color( 30, 30, 30, 200 ) )
-		draw.RoundedBox( 0, 0, 0, w, 25, Color( 80, 80, 80, 100 ) )
-	end
-	bChar.oldPaint = bChar.frame.Paint
-	
-	local serverName = vgui.Create("DLabel", bChar.frame)
-	serverName:SetText( "CharCreation" )
-	serverName:SetFont( "bChar_18")
-	serverName:SizeToContents()
-	serverName:SetPos( 5, 4 )
--- Welcome to SERVERNAME or smth on this lines.
-	bChar.welcomeText = vgui.Create("RichText", bChar.frame) 
-	bChar.welcomeText:SetSize( bChar.frame:GetWide() - 10, bChar.frame:GetTall() - 60 )
-	bChar.welcomeText:SetPos( 5, 30 )
-	bChar.welcomeText.Paint = function( self, w, h )
-		draw.RoundedBox( 0, 0, 0, w, h, Color( 30, 30, 30, 100 ) )
-	end
-	bChar.welcomeText.PerformLayout = function( self )
-		self:SetFontInternal("bChar_18")
-		self:SetFGColor( color_white )
-	end
-	bChar.welcomeText:SetVerticalScrollbarEnabled(false)
-	
-	local icon = vgui.Create("DModelPanel", bChar.frame) --need to store it later in bChar for mod reason.
-	icon:SetSize( 200, 200 )
-	icon:SetModel( bChar.plyModelList[1].model ) -- you can only change colors on playermodels
-	function icon:LayoutEntity( Entity ) return end -- disables default rotation
-	icon.Entity:SetSubMaterial(bChar.plyModelList[1].skinid, "sheets_female/scrubs1.vmt")
+local cur = 1
+local curTorso = 0
+local curLegs = 0
+local frame = vgui.Create("DFrame")
+frame:SetSize( 800, 600 )
+frame:SetTitle("")
+frame:ShowCloseButton( true )
+frame:SetDraggable( false )
+frame:SetPos( ScrW()/2 - (frame:GetWide()/2), ScrH()/2 - (frame:GetTall()/2))
+frame.Paint = function( self, w, h )
+bChar.blur( self, 10, 20, 255 )
+draw.RoundedBox( 0, 0, 0, w, h, Color( 30, 30, 30, 200 ) )
+draw.RoundedBox( 0, 0, 0, w, 25, Color( 80, 80, 80, 100 ) )
+end
+frame:MakePopup()
 
-	
-	bChar.frame:MakePopup()
+local title = vgui.Create("DLabel", frame)
+title:SetText( "Char Creation" )
+title:SetFont( "bChar_18" )
+title:SizeToContents()
+title:SetPos( 5, 4 )
+
+bChar.icon = vgui.Create("DModelPanel", frame)
+bChar.icon:SetSize( 200, 450 )
+bChar.icon:SetPos( 300, 25 )
+bChar.icon:SetModel( bChar.plyModelList[cur].model )
+function bChar.icon:LayoutEntity( Entity ) bChar.icon:RunAnimation() end
+
+-- Adjust the position of the entity
+bChar.icon.Entity:SetPos( Vector( 25, 25, 0 ) )
+bChar.icon.Entity:SetAngles( Angle( 0, 40, 0 ) )
+bChar.icon.Entity:SetBodygroup(bChar.plyModelList[cur].torso_bgid, bChar.plyModelList[cur].torso_bgsid)
+bChar.icon.Entity:SetBodygroup(bChar.plyModelList[cur].legs_bgid, bChar.plyModelList[cur].legs_bgsid)
+local modelbuttonforward = vgui.Create("DButton", frame)
+modelbuttonforward:SetPos(550, 150)
+modelbuttonforward:SetSize( 100, 50 )
+modelbuttonforward:SetText("Next Body")
+modelbuttonforward.DoClick = function()
+	if cur >= #bChar.plyModelList then
+		cur = 1
+	else
+		cur = cur + 1
+	end
+	bChar.icon.Entity:SetModel(bChar.plyModelList[cur].model)
+	bChar.icon.Entity:SetSubMaterial(bChar.plyModelList[cur].torso_skinid, "sheets_"..bChar.plyModelList[cur].gender.."/sheet_0"..curTorso..".vmt")
+	bChar.icon.Entity:SetSubMaterial(bChar.plyModelList[cur].legs_skinid, "sheets_"..bChar.plyModelList[cur].gender.."/sheet_0"..curLegs..".vmt")
+	print("cur model:" .. cur)
+end
+local torsobuttonforward = vgui.Create("DButton", frame)
+torsobuttonforward:SetPos(550, 250)
+torsobuttonforward:SetSize( 100, 50 )
+torsobuttonforward:SetText("Next Torso")
+torsobuttonforward.DoClick = function()
+	if curTorso >= 9 then
+		curTorso = 1
+	else
+		curTorso = curTorso + 1
+	end
+	bChar.icon.Entity:SetSubMaterial(bChar.plyModelList[cur].torso_skinid, "sheets_"..bChar.plyModelList[cur].gender.."/sheet_0"..curTorso..".vmt")
+	print("CurTorso:" .. curTorso)
+end
+local legbuttonforward = vgui.Create("DButton", frame)
+legbuttonforward:SetPos(550, 350)
+legbuttonforward:SetSize( 100, 50 )
+legbuttonforward:SetText("Next Legs")
+legbuttonforward.DoClick = function()
+	if curLegs >= 9 then
+		curLegs = 1
+	else
+		curLegs = curLegs + 1
+	end
+	bChar.icon.Entity:SetSubMaterial(bChar.plyModelList[cur].legs_skinid, "sheets_"..bChar.plyModelList[cur].gender.."/sheet_0"..curLegs..".vmt")
+	print("CurLegs:" .. curLegs)
+end
+local modelbuttonbackwards = vgui.Create("DButton", frame)
+modelbuttonbackwards:SetPos(150, 150)
+modelbuttonbackwards:SetSize( 100, 50 )
+modelbuttonbackwards:SetText("Prev Body")
+modelbuttonbackwards.DoClick = function()
+	if cur <= 1 then
+		cur = #bChar.plyModelList
+	else
+		cur = cur - 1
+	end
+	bChar.icon.Entity:SetModel(bChar.plyModelList[cur].model)
+	bChar.icon.Entity:SetSubMaterial(bChar.plyModelList[cur].torso_skinid, "sheets_"..bChar.plyModelList[cur].gender.."/sheet_0"..curTorso..".vmt")
+	bChar.icon.Entity:SetSubMaterial(bChar.plyModelList[cur].legs_skinid, "sheets_"..bChar.plyModelList[cur].gender.."/sheet_0"..curLegs..".vmt")
+	print("cur model:" .. cur)
+end
+local torsobuttonbackwards = vgui.Create("DButton", frame)
+torsobuttonbackwards:SetPos(150, 250)
+torsobuttonbackwards:SetSize( 100, 50 )
+torsobuttonbackwards:SetText("Prev Torso")
+torsobuttonbackwards.DoClick = function()
+	if curTorso <= 1 then
+		curTorso = 9
+	else
+		curTorso = curTorso - 1
+	end
+	bChar.icon.Entity:SetSubMaterial(bChar.plyModelList[cur].torso_skinid, "sheets_"..bChar.plyModelList[cur].gender.."/sheet_0"..curTorso..".vmt")
+	print("CurTorso:" .. curTorso)
+end
+local legbuttonbackwards = vgui.Create("DButton", frame)
+legbuttonbackwards:SetPos(150, 350)
+legbuttonbackwards:SetSize( 100, 50 )
+legbuttonbackwards:SetText("Prev Legs")
+legbuttonbackwards.DoClick = function()
+	if curLegs <= 1 then
+		curLegs = 9
+	else
+		curLegs = curLegs - 1
+	end
+	bChar.icon.Entity:SetSubMaterial(bChar.plyModelList[cur].legs_skinid, "sheets_"..bChar.plyModelList[cur].gender.."/sheet_0"..curLegs..".vmt")
+	print("CurLegs:" .. curLegs)
+end
+local confirm = vgui.Create("DButton", frame)
+confirm:SetPos(350, 550)
+confirm:SetSize( 100, 50 )
+confirm:SetText("confirm")
+confirm.DoClick = function()
+	local tbl = bChar.plyModelList[cur]
+	net.Start("bChar_Confirm")
+	net.WriteTable(tbl)
+	net.SendToServer()
+	frame:Remove()
+end
+
+frame:MakePopup()
 end
 
 concommand.Add("testmenu2", bChar.buildBox)
